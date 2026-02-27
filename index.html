@@ -353,7 +353,8 @@ const SAS_TOKEN       = "se=2030-12-31&sp=rcwdl&spr=https&sv=2026-02-06&sr=c&sig
 // ╔══════════════════════════════════════════════╗
 // ║  ALL URLS ARE HTTPS — NO HTTP ANYWHERE      ║
 // ╚══════════════════════════════════════════════╝
-const BASE_URL = `https://${STORAGE_ACCOUNT}.blob.core.windows.net/${CONTAINER}`;
+const BASE_URL  = `https://${STORAGE_ACCOUNT}.blob.core.windows.net/${CONTAINER}`;
+const HTTP_BASE = `http://${STORAGE_ACCOUNT}.blob.core.windows.net/${CONTAINER}`;
 
 let imageNames = [];
 
@@ -421,7 +422,7 @@ function renderTable(list){
   tbody.innerHTML=clean.map((name,i)=>{
     const encoded    = encodeURIComponent(name);
     const previewUrl = `${BASE_URL}/${encoded}?${SAS_TOKEN}`;  // with SAS for display
-    const publicUrl  = `${BASE_URL}/${encoded}`;               // clean HTTPS for sharing
+    const publicUrl  = `${HTTP_BASE}/${encoded}`;              // HTTP for NAV system
     return `<tr style="animation-delay:${i*0.04}s">
       <td class="num-cell">${i+1}</td>
       <td class="preview-cell"><img class="img-thumb" src="${previewUrl}" loading="lazy" onclick="openLightbox('${previewUrl}')" title="Click to zoom"></td>
@@ -514,11 +515,11 @@ function exportData(type){
   if(!valid.length){showToast('No images to export','info');return;}
   let content='';
   if(type==='txt'){
-    content=valid.map(n=>`${BASE_URL}/${encodeURIComponent(n)}`).join('\n');
+    content=valid.map(n=>`${HTTP_BASE}/${encodeURIComponent(n)}`).join('\n');
   }else if(type==='csv'){
-    content='Name,URL\n'+valid.map(n=>`"${n}","${BASE_URL}/${encodeURIComponent(n)}"`).join('\n');
+    content='Name,URL\n'+valid.map(n=>`"${n}","${HTTP_BASE}/${encodeURIComponent(n)}"`).join('\n');
   }else if(type==='sql'){
-    content=valid.map(n=>`INSERT INTO images (name, url) VALUES ('${n.replace(/'/g,"\\'")}', '${BASE_URL}/${encodeURIComponent(n)}');`).join('\n');
+    content=valid.map(n=>`INSERT INTO images (name, url) VALUES ('${n.replace(/'/g,"\\'")}', '${HTTP_BASE}/${encodeURIComponent(n)}');`).join('\n');
   }
   const a=Object.assign(document.createElement('a'),{
     href:URL.createObjectURL(new Blob([content],{type:'text/plain'})),
